@@ -1,18 +1,44 @@
 name: 'CI'
 
 on:
-  push:
-    branches:
-      - '*'
-      - '*/*'
-      - '**'
-      - '!sponsors'
-  pull_request:
-    branches:
-      - '*'
-      - '*/*'
-      - '**'
-      - '!sponsors'
+  workflow_dispatch:
+    inputs:
+      qase_api_base_url:
+        description: "Qase API URL"
+        required: true
+      qase_report:
+        description: "Enabled/disabled reporting to Qase"
+        required: true
+      qase_project_code:
+        description: "Qase project code"
+        required: true
+      qase_run_id:
+        description: "Qase Run ID"
+        required: true
+      qase_run_complete:
+        description: "Qase Run autocomplete"
+        required: true
+
+  # push:
+  #   branches:
+  #     - '*'
+  #     - '*/*'
+  #     - '**'
+  #     - '!sponsors'
+  # pull_request:
+  #   branches:
+  #     - '*'
+  #     - '*/*'
+  #     - '**'
+  #     - '!sponsors'
+
+env:
+  QASE_API_BASE_URL: ${{ inputs.qase_api_base_url }}
+  QASE_TESTOPS_PROJECT: ${{ inputs.qase_project_code }}
+  QASE_TESTOPS_RUN_ID: ${{ inputs.qase_run_id }}
+  QASE_TESTOPS_RUN_COMPLETE: true
+  QASE_TESTOPS_API_TOKEN: ${{ secrets.QASE_TOKEN }}
+
 
 permissions:
   contents: read
@@ -27,6 +53,10 @@ jobs:
       fail-fast: false
 
     steps:
+      - uses: cskmnrpt/qase-link-run@v2
+        env:
+          QASE_TESTOPS_API_TOKEN: ${{ env.QASE_TESTOPS_API_TOKEN }}
+
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
@@ -55,17 +85,24 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
         if: steps.changed-ignored.outputs.only_modified == 'false'
+
       - run: npm ci
         if: steps.changed-ignored.outputs.only_modified == 'false'
+
       - run: npm run build
         if: steps.changed-ignored.outputs.only_modified == 'false'
-      - name: Run Server tests
-        run: npm run test:node
+
+      - run: npm test
         if: steps.changed-ignored.outputs.only_modified == 'false'
-    # We run browser tests only on one version of the node, since client tests do not depend on the server environment.
-      - name: Run browser tests
-        run: npm run test:browser
-        if: steps.changed-ignored.outputs.only_modified == 'false' && matrix.node-version == '22.x'
-      - name: Run package tests
-        run: npm run test:package
-        if: steps.changed-ignored.outputs.only_modified == 'false'
+
+    #   - name: Run Server tests
+    #     run: npm run test:node
+    #     if: steps.changed-ignored.outputs.only_modified == 'false'
+    #
+    # # We run browser tests only on one version of the node, since client tests do not depend on the server environment.
+    #   - name: Run browser tests
+    #     run: npm run test:browser
+    #     if: steps.changed-ignored.outputs.only_modified == 'false' && matrix.node-version == '22.x'
+    #   - name: Run package tests
+    #     run: npm run test:package
+    #     if: steps.changed-ignored.outputs.only_modified == 'false'
