@@ -1,4 +1,4 @@
-name: 'CI'
+name: 'Run tests from Qase'
 
 on:
   workflow_dispatch:
