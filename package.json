@@ -40,7 +40,7 @@
   "type": "module",
   "types": "index.d.ts",
   "scripts": {
-    "test": "export QASE_ROOT_SUITE='automation-demo' QASE_MODE=testops QASE_TESTOPS_API_TOKEN=<token> QASE_TESTOPS_PROJECT=MOCHA; npm run test:node && npm run test:package",
+    "test": "npm run test:node && npm run test:package",
     "test:node": "npm run test:mocha",
     "test:browser": "npm run test:karma",
     "test:package": "npm run test:eslint && npm run test:dtslint && npm run test:exports",
